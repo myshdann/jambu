@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jambu — Presentasi Interaktif</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-deep: #2E7D32;
+    --green-main: #4CAF50;
+    --green-light: #A5D6A7;
+    --green-pale: #E8F5E9;
+    --green-mint: #C8E6C9;
+    --pink-soft: #F48FB1;
+    --pink-pale: #FCE4EC;
+    --white: #FFFFFF;
+    --cream: #F9FBF7;
+    --text-dark: #1B5E20;
+    --text-mid: #388E3C;
+    --text-light: #66BB6A;
+    --shadow-green: rgba(76,175,80,0.25);
+    --shadow-deep: rgba(46,125,50,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; scroll-snap-type: y mandatory; overflow-y: scroll; }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--cream);
+    color: var(--text-dark);
+    cursor: default;
+  }
+
+  /* ===== SLIDES ===== */
+  .slide {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    scroll-snap-align: start;
+    overflow: hidden;
+    padding: 60px 40px;
+  }
+
+  /* ===== NAVIGATION ===== */
+  .nav-dots {
+    position: fixed;
+    right: 28px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .nav-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--green-light);
+    border: 2px solid var(--green-main);
+    cursor: pointer;
+    transition: all .35s ease;
+  }
+
+  .nav-dot.active, .nav-dot:hover {
+    background: var(--green-main);
+    transform: scale(1.4);
+  }
+
+  .nav-arrows {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 14px;
+    z-index: 999;
+  }
+
+  .nav-btn {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(8px);
+    border: 2px solid var(--green-light);
+    color: var(--green-deep);
+    font-size: 18px;
+    cursor: pointer;
+    transition: all .3s;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 20px var(--shadow-green);
+  }
+
+  .nav-btn:hover {
+    background: var(--green-main);
+    color: white;
+    transform: scale(1.1);
+  }
+
+  /* ===== ANIMATIONS ===== */
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes floatY {
+    0%,100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-18px) rotate(3deg); }
+  }
+
+  @keyframes floatSlow {
+    0%,100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes glowPulse {
+    0%,100% { text-shadow: 0 0 30px rgba(76,175,80,0.5), 0 0 60px rgba(76,175,80,0.25); }
+    50% { text-shadow: 0 0 50px rgba(76,175,80,0.8), 0 0 100px rgba(76,175,80,0.4); }
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.7); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes ripple {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(2.5); opacity: 0; }
+  }
+
+  .animate-in {
+    animation: fadeSlideUp 0.8s ease forwards;
+    opacity: 0;
+  }
+
+  .delay-1 { animation-delay: 0.15s; }
+  .delay-2 { animation-delay: 0.3s; }
+  .delay-3 { animation-delay: 0.45s; }
+  .delay-4 { animation-delay: 0.6s; }
+  .delay-5 { animation-delay: 0.75s; }
+
+  /* ===== BACKGROUND ELEMENTS ===== */
+  .bg-blob {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .leaf-deco {
+    position: absolute;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.08;
+  }
+
+  /* ===== SLIDE 1: HERO ===== */
+  #slide-1 {
+    background: linear-gradient(135deg, #E8F5E9 0%, #F1F8E9 40%, #FFFFFF 70%, #FCE4EC 100%);
+    flex-direction: row;
+    gap: 80px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #slide-1 .bg-blob-1 {
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(165,214,167,0.4) 0%, transparent 70%);
+    top: -100px; left: -100px;
+  }
+
+  #slide-1 .bg-blob-2 {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(244,143,177,0.2) 0%, transparent 70%);
+    bottom: -80px; right: -60px;
+  }
+
+  .hero-text { position: relative; z-index: 2; text-align: left; max-width: 580px; }
+
+  .hero-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--green-main), var(--green-light));
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 6px 18px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    animation: fadeSlideUp 0.6s ease forwards;
+    box-shadow: 0 4px 15px var(--shadow-green);
+  }
+
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(80px, 10vw, 140px);
+    font-weight: 900;
+    line-height: 0.9;
+    background: linear-gradient(135deg, #1B5E20 0%, #4CAF50 40%, #81C784 70%, #4CAF50 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 4s linear infinite, fadeSlideUp 0.8s ease 0.1s forwards;
+    opacity: 0;
+  }
+
+  .hero-subtitle {
+    font-size: clamp(16px, 2vw, 22px);
+    font-weight: 300;
+    color: var(--text-mid);
+    margin-top: 16px;
+    letter-spacing: 1px;
+    animation: fadeSlideUp 0.8s ease 0.2s forwards;
+    opacity: 0;
+  }
+
+  .hero-subtitle span {
+    color: var(--pink-soft);
+    font-weight: 600;
+  }
+
+  .hero-divider {
+    width: 60px; height: 3px;
+    background: linear-gradient(90deg, var(--green-main), var(--pink-soft));
+    border-radius: 2px;
+    margin: 24px 0;
+    animation: fadeSlideUp 0.8s ease 0.3s forwards;
+    opacity: 0;
+  }
+
+  .hero-desc {
+    font-size: 15px;
+    color: #558B2F;
+    line-height: 1.7;
+    animation: fadeSlideUp 0.8s ease 0.4s forwards;
+    opacity: 0;
+  }
+
+  .hero-group {
+    display: flex; align-items: center; gap: 12px;
+    margin-top: 32px;
+    animation: fadeSlideUp 0.8s ease 0.5s forwards;
+    opacity: 0;
+  }
+
+  .hero-group .avatar {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--green-main), var(--green-light));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    border: 2px solid white;
+    box-shadow: 0 2px 10px var(--shadow-green);
+  }
+
+  .hero-group-text { font-size: 13px; color: var(--text-mid); }
+  .hero-group-text strong { display: block; color: var(--text-dark); font-size: 14px; }
+
+  .hero-img-container {
+    position: relative; z-index: 2;
+    flex-shrink: 0;
+  }
+
+  .hero-img-wrap {
+    width: clamp(280px, 28vw, 420px);
+    height: clamp(280px, 28vw, 420px);
+    position: relative;
+    animation: floatY 5s ease-in-out infinite;
+  }
+
+  .hero-img-circle {
+    width: 100%; height: 100%;
+    border-radius: 60% 40% 55% 45% / 45% 55% 40% 60%;
+    background: linear-gradient(135deg, var(--green-light), var(--green-mint), var(--green-pale));
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(76,175,80,0.35), 0 10px 30px rgba(76,175,80,0.2);
+    transition: all 0.5s ease;
+  }
+
+  .hero-img-circle img {
+    width: 110%; height: 110%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+
+  .hero-img-circle:hover img { transform: scale(1.08); }
+
+  .hero-orb {
+    position: absolute;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--green-main), var(--green-light));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    box-shadow: 0 8px 25px var(--shadow-green);
+    animation: floatSlow 3s ease-in-out infinite;
+  }
+
+  .hero-orb-1 { width: 70px; height: 70px; top: -10px; right: -10px; animation-delay: 0.5s; }
+  .hero-orb-2 { width: 50px; height: 50px; bottom: 30px; left: -20px; animation-delay: 1s; background: linear-gradient(135deg, var(--pink-soft), #F48FB1); }
+  .hero-orb-3 { width: 40px; height: 40px; top: 50%; right: -30px; animation-delay: 1.5s; }
+
+  /* ===== SECTION TITLE ===== */
+  .section-header { text-align: center; margin-bottom: 50px; position: relative; z-index: 2; }
+
+  .section-label {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--green-main);
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 5vw, 58px);
+    font-weight: 800;
+    color: var(--text-dark);
+    line-height: 1.1;
+  }
+
+  .section-title .accent {
+    background: linear-gradient(135deg, var(--green-main), #81C784);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .section-underline {
+    width: 80px; height: 4px;
+    background: linear-gradient(90deg, var(--green-main), var(--pink-soft));
+    border-radius: 2px;
+    margin: 16px auto 0;
+  }
+
+  /* ===== SLIDE 2: DESKRIPSI ===== */
+  #slide-2 {
+    background: linear-gradient(160deg, #FFFFFF 0%, #E8F5E9 50%, #F1F8E9 100%);
+  }
+
+  .desc-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+    max-width: 1200px;
+    width: 100%;
+    position: relative; z-index: 2;
+  }
+
+  .desc-content { }
+
+  .desc-img-stack { position: relative; }
+
+  .desc-img-main {
+    width: 100%;
+    max-width: 480px;
+    aspect-ratio: 4/5;
+    border-radius: 40px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(46,125,50,0.2);
+    transition: transform 0.5s ease;
+  }
+
+  .desc-img-main:hover { transform: scale(1.02) rotate(1deg); }
+  .desc-img-main img { width: 100%; height: 100%; object-fit: cover; }
+
+  .desc-img-small {
+    position: absolute;
+    width: 160px; height: 160px;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 15px 40px rgba(46,125,50,0.25);
+    border: 4px solid white;
+    transition: transform 0.5s ease;
+    bottom: -20px; right: -20px;
+  }
+
+  .desc-img-small:hover { transform: scale(1.05); }
+  .desc-img-small img { width: 100%; height: 100%; object-fit: cover; }
+
+  .desc-text p {
+    font-size: 16px;
+    line-height: 1.9;
+    color: #4E6B3A;
+    margin-bottom: 20px;
+  }
+
+  .desc-stat-row {
+    display: flex; gap: 20px; margin-top: 30px;
+  }
+
+  .desc-stat {
+    flex: 1;
+    background: linear-gradient(135deg, rgba(165,214,167,0.3), rgba(200,230,201,0.2));
+    border: 1px solid rgba(165,214,167,0.5);
+    border-radius: 20px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s;
+  }
+
+  .desc-stat:hover {
+    background: linear-gradient(135deg, rgba(76,175,80,0.15), rgba(165,214,167,0.25));
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px var(--shadow-green);
+  }
+
+  .desc-stat .num {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--green-main);
+  }
+
+  .desc-stat .label { font-size: 12px; color: var(--text-mid); margin-top: 4px; }
+
+  /* ===== SLIDE 3: VARIAN ===== */
+  #slide-3 {
+    background: linear-gradient(145deg, #F1F8E9 0%, #E8F5E9 50%, #FFFFFF 100%);
+    flex-direction: column;
+  }
+
+  .variant-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    max-width: 1200px;
+    width: 100%;
+    position: relative; z-index: 2;
+  }
+
+  .variant-card {
+    background: white;
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(76,175,80,0.1);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+    border: 1px solid rgba(165,214,167,0.3);
+  }
+
+  .variant-card:hover {
+    transform: translateY(-12px) scale(1.02);
+    box-shadow: 0 30px 60px rgba(76,175,80,0.25);
+  }
+
+  .variant-img {
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .variant-img img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+  }
+
+  .variant-card:hover .variant-img img { transform: scale(1.12); }
+
+  .variant-img-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(46,125,50,0.3) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+
+  .variant-card:hover .variant-img-overlay { opacity: 1; }
+
+  .variant-info { padding: 20px; }
+
+  .variant-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 10px;
+    background: var(--green-pale);
+    color: var(--green-deep);
+    margin-bottom: 8px;
+  }
+
+  .variant-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 6px;
+  }
+
+  .variant-desc { font-size: 13px; color: #6A8F6A; line-height: 1.5; }
+
+  .variant-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 14px; padding-top: 14px;
+    border-top: 1px solid var(--green-pale);
+  }
+
+  .variant-stars { color: #FFC107; font-size: 12px; }
+  .variant-arrow {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: var(--green-pale);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--green-deep);
+    font-size: 14px;
+    transition: all 0.3s;
+  }
+
+  .variant-card:hover .variant-arrow {
+    background: var(--green-main);
+    color: white;
+  }
+
+  /* ===== SLIDE 4: MANFAAT ===== */
+  #slide-4 {
+    background: linear-gradient(135deg, #2E7D32 0%, #388E3C 40%, #4CAF50 100%);
+    flex-direction: column;
+  }
+
+  #slide-4 .section-title { color: white; }
+  #slide-4 .section-label { color: var(--green-light); }
+  #slide-4 .section-underline { background: linear-gradient(90deg, var(--green-light), var(--pink-soft)); }
+
+  .benefit-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    max-width: 1200px;
+    width: 100%;
+    position: relative; z-index: 2;
+  }
+
+  .benefit-card {
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 28px;
+    padding: 36px 24px;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+  }
+
+  .benefit-card:hover {
+    background: rgba(255,255,255,0.2);
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 25px 60px rgba(0,0,0,0.2);
+    border-color: rgba(255,255,255,0.4);
+  }
+
+  .benefit-icon {
+    font-size: 50px;
+    margin-bottom: 20px;
+    display: block;
+    animation: floatSlow 3s ease-in-out infinite;
+  }
+
+  .benefit-card:nth-child(2) .benefit-icon { animation-delay: 0.5s; }
+  .benefit-card:nth-child(3) .benefit-icon { animation-delay: 1s; }
+  .benefit-card:nth-child(4) .benefit-icon { animation-delay: 1.5s; }
+
+  .benefit-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 12px;
+  }
+
+  .benefit-desc {
+    font-size: 14px;
+    color: rgba(255,255,255,0.75);
+    line-height: 1.7;
+  }
+
+  .benefit-bar {
+    margin-top: 20px;
+    height: 4px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .benefit-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green-light), white);
+    border-radius: 2px;
+    transform-origin: left;
+    transition: width 1s ease 0.5s;
+    width: 0;
+  }
+
+  .benefit-card.visible .benefit-bar-fill { width: var(--pct); }
+
+  #slide-4 .bg-blob-3 {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    animation: spin 30s linear infinite;
+  }
+
+  /* ===== SLIDE 5: OLAHAN ===== */
+  #slide-5 {
+    background: linear-gradient(160deg, #FFFFFF 0%, #F9FBF7 50%, #E8F5E9 100%);
+    flex-direction: column;
+  }
+
+  .olahan-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    max-width: 1200px;
+    width: 100%;
+    position: relative; z-index: 2;
+  }
+
+  .olahan-card {
+    border-radius: 28px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    box-shadow: 0 10px 40px rgba(76,175,80,0.12);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    aspect-ratio: 3/4;
+  }
+
+  .olahan-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 30px 70px rgba(76,175,80,0.3);
+  }
+
+  .olahan-img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+  }
+
+  .olahan-card:hover .olahan-img { transform: scale(1.12); }
+
+  .olahan-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(27,94,32,0.85) 0%, rgba(27,94,32,0.3) 50%, transparent 100%);
+    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 24px;
+    transition: all 0.4s;
+  }
+
+  .olahan-card:hover .olahan-overlay {
+    background: linear-gradient(to top, rgba(27,94,32,0.95) 0%, rgba(27,94,32,0.5) 60%, transparent 100%);
+  }
+
+  .olahan-emoji { font-size: 28px; margin-bottom: 8px; }
+
+  .olahan-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 4px;
+  }
+
+  .olahan-sub {
+    font-size: 13px;
+    color: rgba(255,255,255,0.7);
+    transform: translateY(10px);
+    opacity: 0;
+    transition: all 0.4s ease 0.1s;
+  }
+
+  .olahan-card:hover .olahan-sub {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .olahan-badge {
+    position: absolute;
+    top: 16px; right: 16px;
+    background: white;
+    border-radius: 12px;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--green-deep);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transform: translateY(-5px);
+    opacity: 0;
+    transition: all 0.4s ease;
+  }
+
+  .olahan-card:hover .olahan-badge {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  /* ===== SLIDE 6: PENUTUP ===== */
+  #slide-6 {
+    background: linear-gradient(145deg, #1B5E20 0%, #2E7D32 30%, #388E3C 60%, #4CAF50 100%);
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .outro-content { position: relative; z-index: 2; }
+
+  .outro-leaf {
+    font-size: 80px;
+    display: block;
+    animation: floatY 4s ease-in-out infinite;
+    margin-bottom: 20px;
+  }
+
+  .outro-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(60px, 8vw, 100px);
+    font-weight: 900;
+    color: white;
+    line-height: 1;
+    animation: glowPulse 3s ease-in-out infinite;
+    text-shadow: 0 0 40px rgba(165,214,167,0.6), 0 0 80px rgba(76,175,80,0.4);
+  }
+
+  .outro-sub {
+    font-size: clamp(18px, 2.5vw, 28px);
+    color: rgba(255,255,255,0.85);
+    margin-top: 20px;
+    font-weight: 300;
+    letter-spacing: 2px;
+  }
+
+  .outro-divider {
+    width: 100px; height: 3px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+    border-radius: 2px;
+    margin: 30px auto;
+  }
+
+  .outro-team {
+    font-size: 16px;
+    color: rgba(255,255,255,0.65);
+    letter-spacing: 1px;
+  }
+
+  .outro-circles {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: 600px; height: 600px;
+    pointer-events: none;
+  }
+
+  .outro-circle {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.1);
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+  }
+
+  .outro-circle:nth-child(1) { width: 200px; height: 200px; animation: ripple 4s ease-out infinite; }
+  .outro-circle:nth-child(2) { width: 350px; height: 350px; animation: ripple 4s ease-out infinite 1s; }
+  .outro-circle:nth-child(3) { width: 500px; height: 500px; animation: ripple 4s ease-out infinite 2s; }
+
+  .outro-card-row {
+    display: flex; gap: 20px; justify-content: center;
+    margin-top: 40px;
+  }
+
+  .outro-card {
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 20px;
+    padding: 20px 28px;
+    transition: all 0.3s;
+    cursor: default;
+  }
+
+  .outro-card:hover {
+    background: rgba(255,255,255,0.2);
+    transform: translateY(-5px);
+  }
+
+  .outro-card .emoji { font-size: 28px; }
+  .outro-card .text { font-size: 13px; color: rgba(255,255,255,0.7); margin-top: 8px; }
+
+  /* ===== LEAF PATTERNS ===== */
+  .leaf-svg {
+    position: absolute;
+    pointer-events: none;
+    opacity: 0.06;
+    z-index: 0;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 900px) {
+    .desc-layout { grid-template-columns: 1fr; gap: 30px; }
+    .variant-grid, .benefit-grid, .olahan-grid { grid-template-columns: repeat(2, 1fr); }
+    #slide-1 { flex-direction: column-reverse; gap: 30px; }
+    .hero-text { text-align: center; }
+    .hero-group { justify-content: center; }
+    .hero-img-wrap { width: 240px; height: 240px; }
+  }
+
+  @media (max-width: 600px) {
+    .slide { padding: 50px 20px; }
+    .variant-grid, .benefit-grid, .olahan-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
+    .nav-dots { right: 12px; }
+    .desc-stat-row { flex-direction: column; }
+    .outro-card-row { flex-wrap: wrap; }
+  }
+
+  /* ===== INTERSECTION OBSERVER TRIGGERED ===== */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .reveal-scale {
+    opacity: 0;
+    transform: scale(0.85);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .reveal-scale.visible {
+    opacity: 1;
+    transform: scale(1);
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV DOTS -->
+<nav class="nav-dots" id="navDots">
+  <div class="nav-dot active" onclick="goToSlide(0)" title="Beranda"></div>
+  <div class="nav-dot" onclick="goToSlide(1)" title="Deskripsi"></div>
+  <div class="nav-dot" onclick="goToSlide(2)" title="Varian"></div>
+  <div class="nav-dot" onclick="goToSlide(3)" title="Manfaat"></div>
+  <div class="nav-dot" onclick="goToSlide(4)" title="Olahan"></div>
+  <div class="nav-dot" onclick="goToSlide(5)" title="Penutup"></div>
+</nav>
+
+<!-- NAV ARROWS -->
+<div class="nav-arrows">
+  <button class="nav-btn" onclick="prevSlide()" title="Slide sebelumnya">&#8593;</button>
+  <button class="nav-btn" onclick="nextSlide()" title="Slide berikutnya">&#8595;</button>
+</div>
+
+<!-- ====================== -->
+<!-- SLIDE 1: HERO -->
+<!-- ====================== -->
+<section class="slide" id="slide-1">
+  <div class="bg-blob bg-blob-1"></div>
+  <div class="bg-blob bg-blob-2"></div>
+
+  <!-- Leaf decorations -->
+  <svg class="leaf-svg" style="top:-50px;left:-80px;width:400px;" viewBox="0 0 200 200"><path d="M10 100 Q50 10 100 20 Q150 30 190 100 Q150 170 100 180 Q50 190 10 100Z" fill="#4CAF50"/></svg>
+  <svg class="leaf-svg" style="bottom:-60px;right:-40px;width:300px;transform:rotate(180deg)" viewBox="0 0 200 200"><path d="M10 100 Q50 10 100 20 Q150 30 190 100 Q150 170 100 180 Q50 190 10 100Z" fill="#A5D6A7"/></svg>
+
+  <div class="hero-text">
+    <div class="hero-badge">🌿 Presentasi Ilmiah</div>
+    <h1 class="hero-title">JAMBU</h1>
+    <p class="hero-subtitle">Buah Segar <span>Kaya Manfaat</span> untuk Kesehatan</p>
+    <div class="hero-divider"></div>
+    <p class="hero-desc animate-in delay-3">Jambu adalah salah satu buah tropis yang kaya akan vitamin, mineral, dan antioksidan. Dikenal luas di Asia, jambu hadir dalam berbagai varietas dengan rasa yang segar dan menyehatkan.</p>
+    <div class="hero-group">
+      <div class="avatar">🧒</div>
+      <div class="avatar" style="margin-left:-10px">👨</div>
+     
+      <div class="hero-group-text">
+        <strong>karya : M Sahdan & Abdul Latif</strong>
+        Mata Pelajaran informatika · X9
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-img-container">
+    <div class="hero-img-wrap">
+      <div class="hero-img-circle">
+        <img src="https://www.static-src.com/wcsstore/Indraprastha/images/catalog/full//97/MTA-21362848/no_brand_jambu_biji_merah_segar_buah_jambu_biji_merah_jambu_biji_merah_1kg_full01_seck8jng.jpg" alt="Buah Jambu Biji">
+
+      </div>
+      <div class="hero-orb hero-orb-1">🍃</div>
+      <div class="hero-orb hero-orb-2">💕</div>
+      <div class="hero-orb hero-orb-3">✨</div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== -->
+<!-- SLIDE 2: DESKRIPSI -->
+<!-- ====================== -->
+<section class="slide" id="slide-2">
+  <svg class="leaf-svg" style="top:10%;right:-60px;width:350px;opacity:0.05;transform:rotate(30deg)" viewBox="0 0 200 200"><path d="M10 100 Q50 10 100 20 Q150 30 190 100 Q150 170 100 180 Q50 190 10 100Z" fill="#4CAF50"/></svg>
+
+  <div class="desc-layout">
+    <div class="desc-img-stack reveal-scale">
+      <div class="desc-img-main">
+        <img src="https://images.forestdigest.com/upload/2024/20241219162231.jpg" alt="Pohon Jambu Biji">
+      </div>
+      <div class="desc-img-small">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHA1RYCAYUaEkqvZasOW18_5LSR3nBy9FFiaHkM7SezjIFVufJICJtqtg&s=10">
+      </div>
+    </div>
+
+    <div class="desc-content">
+      <div class="section-header" style="text-align:left;margin-bottom:24px;">
+        <span class="section-label">02 — Mengenal</span>
+        <h2 class="section-title">Apa itu <span class="accent">Jambu?</span></h2>
+        <div class="section-underline" style="margin-left:0"></div>
+      </div>
+
+      <div class="desc-text reveal">
+        <p>Jambu (<em>Psidium guajava</em>) adalah tanaman buah tropis dari famili Myrtaceae yang berasal dari Amerika Tengah dan Selatan, kemudian menyebar ke Asia, termasuk Indonesia.</p>
+        <p>Buah ini berbentuk bulat hingga lonjong dengan daging buah berwarna putih atau merah muda. Jambu dikenal memiliki kandungan <strong>Vitamin C</strong> yang sangat tinggi — bahkan melebihi jeruk!</p>
+      </div>
+
+      <div class="desc-stat-row reveal">
+        <div class="desc-stat">
+          <div class="num">4×</div>
+          <div class="label">Vitamin C vs Jeruk</div>
+        </div>
+        <div class="desc-stat">
+          <div class="num">68</div>
+          <div class="label">Kkal per 100g</div>
+        </div>
+        <div class="desc-stat">
+          <div class="num">5g</div>
+          <div class="label">Serat per sajian</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== -->
+<!-- SLIDE 3: VARIAN -->
+<!-- ====================== -->
+<section class="slide" id="slide-3">
+  <svg class="leaf-svg" style="bottom:-40px;left:-60px;width:400px;opacity:0.06" viewBox="0 0 200 200"><path d="M10 100 Q50 10 100 20 Q150 30 190 100 Q150 170 100 180 Q50 190 10 100Z" fill="#2E7D32"/></svg>
+
+  <div class="section-header reveal">
+    <span class="section-label">03 — Ragam Jenis</span>
+    <h2 class="section-title">Varian <span class="accent">Jambu</span></h2>
+    <div class="section-underline"></div>
+  </div>
+
+  <div class="variant-grid">
+    <div class="variant-card reveal" style="transition-delay:0.1s">
+      <div class="variant-img">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSfCUARACku3oAnW5C3XidVgQpw75TitAAON126Ks8jwaMnP3hRI3dboHc&s=10" alt="Jambu Biji Merah">
+        <div class="variant-img-overlay"></div>
+      </div>
+      <div class="variant-info">
+        <span class="variant-tag">Populer</span>
+        <div class="variant-name">Jambu Biji Merah</div>
+        <div class="variant-desc">Daging merah muda, manis bercampur asam. Paling banyak dikonsumsi.</div>
+        <div class="variant-footer">
+          <span class="variant-stars">★★★★★</span>
+          <span class="variant-arrow">→</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="variant-card reveal" style="transition-delay:0.2s">
+      <div class="variant-img">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTDVQsEyBvMCjT7fjbaIveIr1kQphH9KKykEeNkPwJr_W2y-b05i69foQ4&s=10">
+        <div class="variant-img-overlay"></div>
+      </div>
+      <div class="variant-info">
+        <span class="variant-tag">Klasik</span>
+        <div class="variant-name">Jambu Biji Putih</div>
+        <div class="variant-desc">Daging putih pucat, rasa lebih manis dan segar, banyak biji.</div>
+        <div class="variant-footer">
+          <span class="variant-stars">★★★★☆</span>
+          <span class="variant-arrow">→</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="variant-card reveal" style="transition-delay:0.3s">
+      <div class="variant-img">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT7PsrUu9Ovq4QBwrcB5TDWWZk3BKaAYNIk-DevDol-S7hXYmIQXwpZzD7M&s=10">
+        <div class="variant-img-overlay"></div>
+      </div>
+      <div class="variant-info">
+        <span class="variant-tag">Premium</span>
+        <div class="variant-name">Jambu Kristal</div>
+        <div class="variant-desc">Hampir tanpa biji, daging renyah, manis, dan sangat segar.</div>
+        <div class="variant-footer">
+          <span class="variant-stars">★★★★★</span>
+          <span class="variant-arrow">→</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="variant-card reveal" style="transition-delay:0.4s">
+      <div class="variant-img">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRakVwB3dqBrcGRJjSmbO9kiFVyaTz0D2YLR9RJ6dTwsUk3T7UISZNY1pnt&s=10" alt="Jambu Air">
+        <div class="variant-img-overlay"></div>
+      </div>
+      <div class="variant-info">
+        <span class="variant-tag">Segar</span>
+        <div class="variant-name">Jambu Air</div>
+        <div class="variant-desc">Berbentuk lonceng, renyah, berair banyak, cocok dimakan langsung.</div>
+        <div class="variant-footer">
+          <span class="variant-stars">★★★★☆</span>
+          <span class="variant-arrow">→</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== -->
+<!-- SLIDE 4: MANFAAT -->
+<!-- ====================== -->
+<section class="slide" id="slide-4">
+  <div class="bg-blob bg-blob-3"></div>
+  <svg class="leaf-svg" style="top:5%;left:-80px;width:500px;opacity:0.04;transform:rotate(-20deg)" viewBox="0 0 200 200"><path d="M10 100 Q50 10 100 20 Q150 30 190 100 Q150 170 100 180 Q50 190 10 100Z" fill="white"/></svg>
+
+  <div class="section-header reveal">
+    <span class="section-label">04 — Khasiat</span>
+    <h2 class="section-title" style="color:white">Manfaat <span style="color:var(--green-light)">Jambu</span></h2>
+    <div class="section-underline"></div>
+  </div>
+
+  <div class="benefit-grid">
+    <div class="benefit-card reveal" style="transition-delay:0.1s">
+      <span class="benefit-icon">🍊</span>
+      <div class="benefit-name">Vitamin C Tinggi</div>
+      <div class="benefit-desc">Kandungan Vitamin C jambu 4× lebih tinggi dari jeruk. Mendukung imunitas dan kesehatan kulit.</div>
+      <div class="benefit-bar"><div class="benefit-bar-fill" style="--pct:95%"></div></div>
+    </div>
+
+    <div class="benefit-card reveal" style="transition-delay:0.2s">
+      <span class="benefit-icon">🛡️</span>
+      <div class="benefit-name">Tingkatkan Imun</div>
+      <div class="benefit-desc">Antioksidan seperti likopen dan quercetin melindungi sel tubuh dari radikal bebas dan penyakit.</div>
+      <div class="benefit-bar"><div class="benefit-bar-fill" style="--pct:88%"></div></div>
+    </div>
+
+    <div class="benefit-card reveal" style="transition-delay:0.3s">
+      <span class="benefit-icon">🌿</span>
+      <div class="benefit-name">Sehat Pencernaan</div>
+      <div class="benefit-desc">Kandungan serat tinggi membantu melancarkan pencernaan dan mencegah sembelit secara alami.</div>
+      <div class="benefit-bar"><div class="benefit-bar-fill" style="--pct:82%"></div></div>
+    </div>
+
+    <div class="benefit-card reveal" style="transition-delay:0.4s">
+      <span class="benefit-icon">✨</span>
+      <div class="benefit-name">Kulit Bercahaya</div>
+      <div class="benefit-desc">Vitamin C dan antioksidan menstimulasi produksi kolagen, menjaga kulit tetap lembap dan glowing.</div>
+      <div class="benefit-bar"><div class="benefit-bar-fill" style="--pct:90%"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== -->
+<!-- SLIDE 5: OLAHAN -->
+<!-- ====================== -->
+<section class="slide" id="slide-5">
+  <svg class="leaf-svg" style="top:-50px;right:-50px;width:350px;opacity:0.06;transform:rotate(45deg)" viewBox="0 0 200 200"><path d="M10 100 Q50 10 100 20 Q150 30 190 100 Q150 170 100 180 Q50 190 10 100Z" fill="#4CAF50"/></svg>
+
+  <div class="section-header reveal">
+    <span class="section-label">05 — Kreasi</span>
+    <h2 class="section-title">Olahan <span class="accent">Jambu</span></h2>
+    <div class="section-underline"></div>
+  </div>
+
+  <div class="olahan-grid">
+    <div class="olahan-card reveal" style="transition-delay:0.1s">
+      <img class="olahan-img" src="https://i0.wp.com/resepkoki.id/wp-content/uploads/2021/03/Resep-Jus-Jambu-scaled.jpg?fit=1440%2C1920&ssl=1" alt="Jus Jambu">
+      <div class="olahan-overlay">
+        <span class="olahan-emoji">🥤</span>
+        <div class="olahan-name">Jus Jambu</div>
+        <div class="olahan-sub">Segar, kaya vitamin, cocok untuk semua usia</div>
+      </div>
+      <div class="olahan-badge">🔥 Favorit</div>
+    </div>
+
+    <div class="olahan-card reveal" style="transition-delay:0.2s">
+      <img class="olahan-img" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQtf7GNGbEN_jMLra5QVJroowomMOA_9Yrx-3aG9867ex18Xt_2hvBnu0Y&s=10" alt="Es Jambu">
+      <div class="olahan-overlay">
+        <span class="olahan-emoji">🧊</span>
+        <div class="olahan-name">Es Jambu</div>
+        <div class="olahan-sub">Minuman segar, campuran sirup dan susu</div>
+      </div>
+      <div class="olahan-badge">❄️ Segar</div>
+    </div>
+
+    <div class="olahan-card reveal" style="transition-delay:0.3s">
+      <img class="olahan-img" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfPTJ_CjlxoI7Zg1rIuNmraRxnYK-B51eVm72MEa44uPkQPSclfp8hIvA&s=10">
+      <div class="olahan-overlay">
+        <span class="olahan-emoji">🍯</span>
+        <div class="olahan-name">Selai Jambu</div>
+        <div class="olahan-sub">Manis legit, sempurna untuk olesan roti</div>
+      </div>
+      <div class="olahan-badge">✨ Unik</div>
+    </div>
+
+    <div class="olahan-card reveal" style="transition-delay:0.4s">
+      <img class="olahan-img" src="https://o-cdf.oramiland.com/unsafe/cnc-magazine.oramiland.com/parenting/original_images/Resep_Rujak_Bangkok.jpg">
+      <div class="olahan-overlay">
+        <span class="olahan-emoji">🌶️</span>
+        <div class="olahan-name">Rujak Jambu</div>
+        <div class="olahan-sub">Perpaduan manis, asam, dan pedas yang menggugah</div>
+      </div>
+      <div class="olahan-badge">🌶️ Pedas</div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== -->
+<!-- SLIDE 6: PENUTUP -->
+<!-- ====================== -->
+<section class="slide" id="slide-6">
+  <div class="outro-circles">
+    <div class="outro-circle"></div>
+    <div class="outro-circle"></div>
+    <div class="outro-circle"></div>
+  </div>
+
+  <svg class="leaf-svg" style="top:5%;left:5%;width:300px;opacity:0.06;transform:rotate(-15deg)" viewBox="0 0 200 200"><path d="M10 100 Q50 10 100 20 Q150 30 190 100 Q150 170 100 180 Q50 190 10 100Z" fill="white"/></svg>
+  <svg class="leaf-svg" style="bottom:5%;right:5%;width:280px;opacity:0.06;transform:rotate(160deg)" viewBox="0 0 200 200"><path d="M10 100 Q50 10 100 20 Q150 30 190 100 Q150 170 100 180 Q50 190 10 100Z" fill="white"/></svg>
+
+  <div class="outro-content">
+    <span class="outro-leaf reveal">🍈</span>
+    <h2 class="outro-title reveal delay-1">Terima Kasih</h2>
+    <p class="outro-sub reveal delay-2">Semoga presentasi ini bermanfaat dan menginspirasi</p>
+    <div class="outro-divider reveal delay-3"></div>
+    <p class="outro-team reveal delay-3">karya : M Sahdan & Abdul latif</p>
+
+    <div class="outro-card-row reveal delay-4">
+      <div class="outro-card">
+        <div class="emoji">🌿</div>
+        <div class="text">Konsumsi jambu<br>setiap hari</div>
+      </div>
+      <div class="outro-card">
+        <div class="emoji">💚</div>
+        <div class="text">Hidup sehat<br>dimulai dari alam</div>
+      </div>
+      <div class="outro-card">
+        <div class="emoji">🍃</div>
+        <div class="text">Jaga kelestarian<br>tanaman lokal</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const dots = document.querySelectorAll('.nav-dot');
+  let currentSlide = 0;
+
+  function updateDots(index) {
+    dots.forEach((d, i) => d.classList.toggle('active', i === index));
+  }
+
+  function goToSlide(index) {
+    slides[index].scrollIntoView({ behavior: 'smooth' });
+    currentSlide = index;
+    updateDots(index);
+  }
+
+  function nextSlide() {
+    if (currentSlide < slides.length - 1) goToSlide(currentSlide + 1);
+  }
+
+  function prevSlide() {
+    if (currentSlide > 0) goToSlide(currentSlide - 1);
+  }
+
+  // Keyboard navigation
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') nextSlide();
+    if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') prevSlide();
+  });
+
+  // Intersection Observer for active dot & animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const idx = Array.from(slides).indexOf(entry.target);
+        if (idx !== -1) {
+          currentSlide = idx;
+          updateDots(idx);
+        }
+      }
+    });
+  }, { threshold: 0.5 });
+
+  slides.forEach(s => observer.observe(s));
+
+  // Reveal animations
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        // Trigger benefit bars
+        const bar = entry.target.querySelector('.benefit-bar-fill');
+        if (bar) {
+          setTimeout(() => { bar.style.width = bar.style.getPropertyValue('--pct') || getComputedStyle(bar).getPropertyValue('--pct'); }, 300);
+        }
+      }
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+
+  document.querySelectorAll('.reveal, .reveal-scale').forEach(el => revealObserver.observe(el));
+
+  // Benefit bar observer
+  const benefitObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        const fill = entry.target.querySelector('.benefit-bar-fill');
+        if (fill) {
+          const pct = fill.style.cssText.match(/--pct:\s*([^;]+)/)?.[1] || '80%';
+          setTimeout(() => { fill.style.width = pct; }, 400);
+        }
+      }
+    });
+  }, { threshold: 0.3 });
+
+  document.querySelectorAll('.benefit-card').forEach(el => benefitObserver.observe(el));
+
+  // Stagger reveal for cards
+  document.querySelectorAll('.variant-card, .olahan-card').forEach((card, i) => {
+    card.style.transitionDelay = (i * 0.12) + 's';
+  });
+</script>
+</body>
+</html>
